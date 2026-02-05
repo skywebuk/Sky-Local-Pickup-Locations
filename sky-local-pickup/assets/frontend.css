@@ -51,6 +51,35 @@
     outline: none;
 }
 
+/* Date and Time Slot Wrappers */
+.sky-pickup-date-wrapper,
+.sky-pickup-slot-wrapper {
+    margin-top: 15px;
+    animation: skyPickupFadeIn 0.3s ease;
+}
+
+.sky-pickup-field-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #1d2327;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.sky-pickup-field-label svg {
+    color: #007cba;
+    flex-shrink: 0;
+}
+
+.sky-pickup-field-note {
+    margin: 8px 0 0 0;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
 /* Location Details */
 .sky-pickup-details {
     margin-top: 20px;
@@ -151,20 +180,20 @@
         margin-left: 0;
         margin-top: 20px;
     }
-    
+
     .sky-pickup-container {
         padding: 15px;
     }
-    
+
     .sky-pickup-select {
         padding: 12px 14px;
         font-size: 16px; /* Prevents iOS zoom */
     }
-    
+
     .sky-pickup-map {
         height: 180px;
     }
-    
+
     .sky-pickup-directions {
         width: 100%;
         justify-content: center;
@@ -188,4 +217,37 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%2300a32a' d='M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z'/%3E%3C/svg%3E");
     background-position: right 40px center, right 16px center;
     background-repeat: no-repeat, no-repeat;
+}
+
+/* Summary Section */
+.sky-pickup-summary {
+    margin-top: 15px;
+    padding: 15px;
+    background: #e8f5e9;
+    border-radius: 8px;
+    border: 1px solid #c8e6c9;
+}
+
+.sky-pickup-summary-title {
+    font-weight: 600;
+    color: #2e7d32;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sky-pickup-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 5px 0;
+    color: #1b5e20;
+    font-size: 14px;
+}
+
+.sky-pickup-summary-item svg {
+    width: 16px;
+    height: 16px;
+    color: #2e7d32;
 }
