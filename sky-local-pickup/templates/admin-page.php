@@ -18,8 +18,33 @@ $days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturd
                 <tr>
                     <th><label for="pickup_label">Dropdown Label</label></th>
                     <td>
-                        <input type="text" name="pickup_label" id="pickup_label" 
+                        <input type="text" name="pickup_label" id="pickup_label"
                                value="<?php echo esc_attr($label); ?>" class="regular-text">
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="sky-pickup-settings-section">
+            <h2>Pickup Time Slots</h2>
+            <p class="description">Control which time slots are available for customers to select during checkout. These apply to all locations.</p>
+            <table class="form-table">
+                <tr>
+                    <th>Available Time Slots</th>
+                    <td>
+                        <fieldset>
+                            <label style="display: block; margin-bottom: 10px;">
+                                <input type="checkbox" name="pickup_slot_morning" value="yes"
+                                       <?php checked($slot_morning, 'yes'); ?>>
+                                <strong>Morning</strong> <span class="description">(e.g., 9:00 AM - 12:00 PM)</span>
+                            </label>
+                            <label style="display: block;">
+                                <input type="checkbox" name="pickup_slot_evening" value="yes"
+                                       <?php checked($slot_evening, 'yes'); ?>>
+                                <strong>Evening</strong> <span class="description">(e.g., 12:00 PM - 5:00 PM)</span>
+                            </label>
+                            <p class="description" style="margin-top: 10px;">At least one time slot must be enabled. Customers will only see enabled options at checkout.</p>
+                        </fieldset>
                     </td>
                 </tr>
             </table>

@@ -8,7 +8,7 @@
         init: function() {
             this.bindEvents();
             this.checkShippingMethod();
-            
+
             // Listen for WooCommerce shipping method changes
             $(document.body).on('updated_checkout', this.checkShippingMethod.bind(this));
             $(document.body).on('updated_shipping_method', this.checkShippingMethod.bind(this));
@@ -16,6 +16,8 @@
 
         bindEvents: function() {
             $(document).on('change', '#sky_pickup_location', this.onLocationChange.bind(this));
+            $(document).on('change', '#sky_pickup_date', this.onDateChange.bind(this));
+            $(document).on('change', '#sky_pickup_time_slot', this.onTimeSlotChange.bind(this));
             $(document).on('change', 'input[name^="shipping_method"]', this.checkShippingMethod.bind(this));
         },
 
@@ -54,21 +56,31 @@
             } else {
                 $wrapper.slideUp(300);
                 $('#sky-pickup-details').hide();
+                $('#sky-pickup-date-wrapper').hide();
+                $('#sky-pickup-slot-wrapper').hide();
             }
         },
 
         onLocationChange: function() {
             var $select = $('#sky_pickup_location');
             var $details = $('#sky-pickup-details');
+            var $dateWrapper = $('#sky-pickup-date-wrapper');
+            var $slotWrapper = $('#sky-pickup-slot-wrapper');
             var $selected = $select.find('option:selected');
 
             if (!$selected.val()) {
                 $details.slideUp(200);
+                $dateWrapper.slideUp(200);
+                $slotWrapper.slideUp(200);
                 $select.removeClass('selected');
                 return;
             }
 
             $select.addClass('selected');
+
+            // Show date and time slot dropdowns
+            $dateWrapper.slideDown(300);
+            $slotWrapper.slideDown(300);
 
             // Get data from selected option
             var address = $selected.data('address');
@@ -104,6 +116,34 @@
             this.saveSelection($selected.val());
         },
 
+        onDateChange: function() {
+            var $dateSelect = $('#sky_pickup_date');
+            var selectedDate = $dateSelect.val();
+
+            if (selectedDate) {
+                $dateSelect.addClass('selected');
+            } else {
+                $dateSelect.removeClass('selected');
+            }
+
+            // Save to session
+            this.saveSelection();
+        },
+
+        onTimeSlotChange: function() {
+            var $slotSelect = $('#sky_pickup_time_slot');
+            var selectedSlot = $slotSelect.val();
+
+            if (selectedSlot) {
+                $slotSelect.addClass('selected');
+            } else {
+                $slotSelect.removeClass('selected');
+            }
+
+            // Save to session
+            this.saveSelection();
+        },
+
         formatTimeSlots: function(timeSlots) {
             if (!timeSlots || !timeSlots.length) {
                 return '';
@@ -119,7 +159,7 @@
 
                 var days = slot.days && slot.days.length ? slot.days.join(', ') : '';
                 var time = self.formatTime(slot.open) + ' - ' + self.formatTime(slot.close);
-                
+
                 if (days) {
                     lines.push('<div class="sky-pickup-hours-line"><strong>' + days + ':</strong> ' + time + '</div>');
                 } else {
@@ -132,29 +172,51 @@
 
         formatTime: function(time) {
             if (!time) return '';
-            
+
             // Convert 24h to 12h format
             var parts = time.split(':');
             if (parts.length < 2) return time;
-            
+
             var hours = parseInt(parts[0]);
             var minutes = parts[1];
             var suffix = hours >= 12 ? 'pm' : 'am';
-            
+
             hours = hours % 12 || 12;
-            
+
             return hours + ':' + minutes + suffix;
         },
 
         saveSelection: function(locationKey) {
+            var data = {
+                action: 'sky_save_pickup_selection',
+                nonce: skyPickup.nonce
+            };
+
+            // Get location key if not provided
+            if (typeof locationKey === 'undefined') {
+                locationKey = $('#sky_pickup_location').val();
+            }
+
+            if (locationKey) {
+                data.location_key = locationKey;
+            }
+
+            // Get date
+            var selectedDate = $('#sky_pickup_date').val();
+            if (selectedDate) {
+                data.pickup_date = selectedDate;
+            }
+
+            // Get time slot
+            var selectedSlot = $('#sky_pickup_time_slot').val();
+            if (selectedSlot) {
+                data.pickup_slot = selectedSlot;
+            }
+
             $.ajax({
                 url: skyPickup.ajaxUrl,
                 type: 'POST',
-                data: {
-                    action: 'sky_save_pickup_selection',
-                    nonce: skyPickup.nonce,
-                    location_key: locationKey
-                }
+                data: data
             });
         }
     };
