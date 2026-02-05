@@ -68,15 +68,23 @@ $days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturd
                                 <div class="sky-pickup-row">
                                     <div class="sky-pickup-field">
                                         <label>Location Name *</label>
-                                        <input type="text" name="location_name[]" 
-                                               value="<?php echo esc_attr($location['name']); ?>" 
+                                        <input type="text" name="location_name[]"
+                                               value="<?php echo esc_attr($location['name']); ?>"
                                                placeholder="e.g. Gates Store" required>
                                     </div>
                                     <div class="sky-pickup-field sky-pickup-field-small">
                                         <label>Enabled</label>
                                         <label class="sky-pickup-switch">
-                                            <input type="checkbox" name="location_enabled[<?php echo $key; ?>]" 
+                                            <input type="checkbox" name="location_enabled[<?php echo $key; ?>]"
                                                    value="yes" <?php checked($location['enabled'] ?? 'yes', 'yes'); ?>>
+                                            <span class="sky-pickup-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="sky-pickup-field sky-pickup-field-small">
+                                        <label>Same Day Pickup</label>
+                                        <label class="sky-pickup-switch">
+                                            <input type="checkbox" name="location_same_day[<?php echo $key; ?>]"
+                                                   value="yes" <?php checked($location['same_day'] ?? 'no', 'yes'); ?>>
                                             <span class="sky-pickup-slider"></span>
                                         </label>
                                     </div>
@@ -196,6 +204,13 @@ $days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturd
                     <label>Enabled</label>
                     <label class="sky-pickup-switch">
                         <input type="checkbox" name="location_enabled[{{INDEX}}]" value="yes" checked>
+                        <span class="sky-pickup-slider"></span>
+                    </label>
+                </div>
+                <div class="sky-pickup-field sky-pickup-field-small">
+                    <label>Same Day Pickup</label>
+                    <label class="sky-pickup-switch">
+                        <input type="checkbox" name="location_same_day[{{INDEX}}]" value="yes">
                         <span class="sky-pickup-slider"></span>
                     </label>
                 </div>

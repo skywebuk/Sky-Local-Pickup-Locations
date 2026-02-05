@@ -66,6 +66,7 @@
             var $details = $('#sky-pickup-details');
             var $dateWrapper = $('#sky-pickup-date-wrapper');
             var $slotWrapper = $('#sky-pickup-slot-wrapper');
+            var $dateSelect = $('#sky_pickup_date');
             var $selected = $select.find('option:selected');
 
             if (!$selected.val()) {
@@ -77,6 +78,25 @@
             }
 
             $select.addClass('selected');
+
+            // Check if same day pickup is allowed for this location
+            var sameDayAllowed = $selected.data('same-day') === 'yes';
+            var $sameDayOption = $dateSelect.find('.sky-pickup-same-day-option');
+
+            if (sameDayAllowed) {
+                $sameDayOption.show();
+            } else {
+                $sameDayOption.hide();
+                // If "Today" was selected but same day is not allowed, reset
+                if ($sameDayOption.is(':selected')) {
+                    $dateSelect.val('');
+                    $dateSelect.removeClass('selected');
+                }
+            }
+
+            // Reset date selection when location changes
+            $dateSelect.val('');
+            $dateSelect.removeClass('selected');
 
             // Show date and time slot dropdowns
             $dateWrapper.slideDown(300);

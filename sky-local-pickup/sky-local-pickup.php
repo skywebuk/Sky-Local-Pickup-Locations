@@ -136,11 +136,21 @@ class Sky_Local_Pickup {
             $available_slots[] = ['value' => 'evening', 'label' => __('Afternoon (12:00 PM - 5:00 PM)', 'sky-local-pickup')];
         }
 
-        // Generate available dates (starting from 3 days from now)
+        // Generate available dates (3 days starting from tomorrow)
         $available_dates = [];
+        $today = new DateTime();
+        $today->setTime(0, 0, 0);
+
+        // Today's date for same-day pickup
+        $today_date = [
+            'value' => $today->format('Y-m-d'),
+            'label' => __('Today', 'sky-local-pickup') . ' - ' . $today->format('l, j F Y'),
+        ];
+
+        // Start from tomorrow for regular dates
         $start_date = new DateTime();
-        $start_date->modify('+3 days');
-        for ($i = 0; $i < 14; $i++) { // Show 14 days of options
+        $start_date->modify('+1 day');
+        for ($i = 0; $i < 3; $i++) { // Show 3 days of options
             $date = clone $start_date;
             $date->modify("+{$i} days");
             $available_dates[] = [
@@ -156,7 +166,7 @@ class Sky_Local_Pickup {
             'selectText' => __('Select a pickup location...', 'sky-local-pickup'),
             'availableSlots' => $available_slots,
             'availableDates' => $available_dates,
-            'minDaysGap' => 3,
+            'todayDate' => $today_date,
         ]);
     }
 
@@ -193,6 +203,7 @@ class Sky_Local_Pickup {
                             'google_link' => esc_url_raw($_POST['location_google_link'][$key] ?? ''),
                             'time_slots' => $time_slots,
                             'enabled' => isset($_POST['location_enabled'][$key]) ? 'yes' : 'no',
+                            'same_day' => isset($_POST['location_same_day'][$key]) ? 'yes' : 'no',
                         ];
                     }
                 }
@@ -247,11 +258,14 @@ class Sky_Local_Pickup {
         $chosen_date = WC()->session->get('sky_chosen_pickup_date');
         $chosen_slot = WC()->session->get('sky_chosen_pickup_slot');
 
-        // Generate available dates (starting from 3 days from now)
+        // Generate available dates (3 days starting from tomorrow)
+        $today = new DateTime();
+        $today->setTime(0, 0, 0);
+
         $available_dates = [];
         $start_date = new DateTime();
-        $start_date->modify('+3 days');
-        for ($i = 0; $i < 14; $i++) {
+        $start_date->modify('+1 day');
+        for ($i = 0; $i < 3; $i++) {
             $date = clone $start_date;
             $date->modify("+{$i} days");
             $available_dates[] = [
@@ -272,6 +286,7 @@ class Sky_Local_Pickup {
                                 data-postcode="<?php echo esc_attr($location['postcode']); ?>"
                                 data-google-link="<?php echo esc_attr($location['google_link'] ?? ''); ?>"
                                 data-time-slots="<?php echo esc_attr($time_slots_json); ?>"
+                                data-same-day="<?php echo esc_attr($location['same_day'] ?? 'no'); ?>"
                                 <?php selected($chosen, $key); ?>>
                             <?php echo esc_html($location['name']); ?> - <?php echo esc_html($location['postcode']); ?>
                         </option>
@@ -286,13 +301,15 @@ class Sky_Local_Pickup {
                     </label>
                     <select name="sky_pickup_date" id="sky_pickup_date" class="sky-pickup-select">
                         <option value=""><?php _e('-- Choose pickup date --', 'sky-local-pickup'); ?></option>
+                        <option value="<?php echo esc_attr($today->format('Y-m-d')); ?>" class="sky-pickup-same-day-option" style="display:none;" <?php selected($chosen_date, $today->format('Y-m-d')); ?>>
+                            <?php _e('Today', 'sky-local-pickup'); ?> - <?php echo esc_html($today->format('l, j F Y')); ?>
+                        </option>
                         <?php foreach ($available_dates as $date): ?>
                             <option value="<?php echo esc_attr($date['value']); ?>" <?php selected($chosen_date, $date['value']); ?>>
                                 <?php echo esc_html($date['label']); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <p class="sky-pickup-field-note"><?php _e('Minimum 3 days from order date required', 'sky-local-pickup'); ?></p>
                 </div>
 
                 <!-- Time Slot Dropdown -->
@@ -347,20 +364,44 @@ class Sky_Local_Pickup {
                     // Using isset and strict comparison because value could be "0" which is valid
                     if (!isset($_POST['sky_pickup_location']) || $_POST['sky_pickup_location'] === '') {
                         wc_add_notice(__('Please choose a collection point to continue.', 'sky-local-pickup'), 'error');
+                        break;
                     }
+
+                    // Get location to check same_day setting
+                    $location_key = intval($_POST['sky_pickup_location']);
+                    $locations = get_option('sky_pickup_locations', []);
+                    $location = $locations[$location_key] ?? null;
+                    $same_day_allowed = ($location && ($location['same_day'] ?? 'no') === 'yes');
 
                     // Validate pickup date
                     if (!isset($_POST['sky_pickup_date']) || $_POST['sky_pickup_date'] === '') {
                         wc_add_notice(__('Please choose a pickup date to continue.', 'sky-local-pickup'), 'error');
                     } else {
-                        // Verify date is at least 3 days from now
                         $selected_date = new DateTime($_POST['sky_pickup_date']);
-                        $min_date = new DateTime();
-                        $min_date->modify('+3 days');
-                        $min_date->setTime(0, 0, 0);
+                        $selected_date->setTime(0, 0, 0);
 
-                        if ($selected_date < $min_date) {
-                            wc_add_notice(__('Pickup date must be at least 3 days from today.', 'sky-local-pickup'), 'error');
+                        $today = new DateTime();
+                        $today->setTime(0, 0, 0);
+
+                        $tomorrow = new DateTime();
+                        $tomorrow->modify('+1 day');
+                        $tomorrow->setTime(0, 0, 0);
+
+                        $max_date = new DateTime();
+                        $max_date->modify('+3 days');
+                        $max_date->setTime(0, 0, 0);
+
+                        // Check if date is today and same_day is not allowed
+                        if ($selected_date == $today && !$same_day_allowed) {
+                            wc_add_notice(__('Same day pickup is not available for this location.', 'sky-local-pickup'), 'error');
+                        }
+                        // Check if date is in the past
+                        elseif ($selected_date < $today) {
+                            wc_add_notice(__('Please select a valid pickup date.', 'sky-local-pickup'), 'error');
+                        }
+                        // Check if date is beyond the allowed range (3 days from tomorrow)
+                        elseif ($selected_date > $max_date) {
+                            wc_add_notice(__('Please select a pickup date within the next 3 days.', 'sky-local-pickup'), 'error');
                         }
                     }
 
