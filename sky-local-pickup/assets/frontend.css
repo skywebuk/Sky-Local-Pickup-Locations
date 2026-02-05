@@ -1,0 +1,191 @@
+/* Sky Local Pickup - Frontend Styles */
+
+.sky-pickup-wrapper {
+    margin: 15px 0 10px 25px;
+    animation: skyPickupFadeIn 0.3s ease;
+}
+
+@keyframes skyPickupFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sky-pickup-container {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Select Dropdown */
+.sky-pickup-select {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 15px;
+    border: 2px solid #dcdcde;
+    border-radius: 8px;
+    background: #fff;
+    color: #1d2327;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+}
+
+.sky-pickup-select:hover {
+    border-color: #007cba;
+}
+
+.sky-pickup-select:focus {
+    border-color: #007cba;
+    box-shadow: 0 0 0 3px rgba(0,124,186,0.15);
+    outline: none;
+}
+
+/* Location Details */
+.sky-pickup-details {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    animation: skyPickupFadeIn 0.3s ease;
+}
+
+.sky-pickup-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sky-pickup-info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.sky-pickup-icon {
+    font-size: 18px;
+    line-height: 1.4;
+    flex-shrink: 0;
+    color: #007cba;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.sky-pickup-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.sky-pickup-info-row span:last-child {
+    color: #50575e;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.sky-pickup-address {
+    font-weight: 600;
+    color: #1d2327 !important;
+}
+
+.sky-pickup-hours-line {
+    margin-bottom: 4px;
+}
+
+.sky-pickup-hours-line:last-child {
+    margin-bottom: 0;
+}
+
+.sky-pickup-hours-line strong {
+    color: #1d2327;
+}
+
+/* Directions Button */
+.sky-pickup-directions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #007cba 0%, #005a87 100%);
+    color: #fff !important;
+    text-decoration: none !important;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,124,186,0.25);
+}
+
+.sky-pickup-directions svg {
+    width: 16px;
+    height: 16px;
+}
+
+.sky-pickup-directions:hover {
+    background: linear-gradient(135deg, #005a87 0%, #004060 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,124,186,0.35);
+}
+
+/* Validation Error State */
+.sky-pickup-select.error,
+.sky-pickup-select.woocommerce-invalid {
+    border-color: #d63638;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .sky-pickup-wrapper {
+        margin-left: 0;
+        margin-top: 20px;
+    }
+    
+    .sky-pickup-container {
+        padding: 15px;
+    }
+    
+    .sky-pickup-select {
+        padding: 12px 14px;
+        font-size: 16px; /* Prevents iOS zoom */
+    }
+    
+    .sky-pickup-map {
+        height: 180px;
+    }
+    
+    .sky-pickup-directions {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* WooCommerce Block Checkout Compatibility */
+.wc-block-components-shipping-rates-control .sky-pickup-wrapper {
+    margin-left: 0;
+}
+
+/* Loading State */
+.sky-pickup-select.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Success Animation */
+.sky-pickup-select.selected {
+    border-color: #00a32a;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%2300a32a' d='M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z'/%3E%3C/svg%3E");
+    background-position: right 40px center, right 16px center;
+    background-repeat: no-repeat, no-repeat;
+}

@@ -1,0 +1,401 @@
+/* Sky Local Pickup - Admin Styles */
+
+.sky-pickup-admin {
+    max-width: 1200px;
+}
+
+.sky-pickup-admin h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1d2327;
+    margin-bottom: 20px;
+}
+
+/* Settings Section */
+.sky-pickup-settings-section {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.sky-pickup-settings-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 20px 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Location List */
+.sky-pickup-locations-list {
+    margin-bottom: 20px;
+}
+
+/* Location Item */
+.sky-pickup-location-item {
+    background: #f8f9fa;
+    border: 1px solid #dcdcde;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.sky-pickup-location-item:hover {
+    border-color: #007cba;
+    box-shadow: 0 2px 8px rgba(0,124,186,0.1);
+}
+
+/* Location Header */
+.sky-pickup-location-header {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background: #fff;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+}
+
+.sky-pickup-location-item.is-open .sky-pickup-location-header {
+    border-bottom-color: #dcdcde;
+}
+
+.sky-pickup-drag-handle {
+    color: #999;
+    margin-right: 15px;
+    cursor: grab;
+    font-size: 16px;
+    user-select: none;
+}
+
+.sky-pickup-location-title {
+    flex: 1;
+    font-weight: 600;
+    color: #1d2327;
+    font-size: 14px;
+}
+
+.sky-pickup-location-toggle {
+    color: #666;
+    margin-right: 15px;
+    transition: transform 0.2s;
+    font-size: 12px;
+}
+
+.sky-pickup-location-item.is-open .sky-pickup-location-toggle {
+    transform: rotate(180deg);
+}
+
+.sky-pickup-remove-btn {
+    background: none;
+    border: none;
+    color: #d63638;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.sky-pickup-remove-btn:hover {
+    opacity: 1;
+}
+
+/* Location Content */
+.sky-pickup-location-content {
+    display: none;
+    padding: 20px;
+}
+
+.sky-pickup-location-item.is-open .sky-pickup-location-content {
+    display: block;
+}
+
+/* Form Rows */
+.sky-pickup-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    align-items: flex-end;
+}
+
+.sky-pickup-row:last-child {
+    margin-bottom: 0;
+}
+
+/* Form Fields */
+.sky-pickup-field {
+    flex: 1;
+}
+
+.sky-pickup-field-small {
+    flex: 0 0 100px;
+}
+
+.sky-pickup-field-wide {
+    flex: 2;
+}
+
+.sky-pickup-field-full {
+    flex: 0 0 100%;
+}
+
+.sky-pickup-field label {
+    display: block;
+    font-weight: 500;
+    color: #50575e;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.sky-pickup-field input[type="text"],
+.sky-pickup-field input[type="time"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sky-pickup-field input[type="text"]:focus,
+.sky-pickup-field input[type="time"]:focus {
+    border-color: #007cba;
+    box-shadow: 0 0 0 2px rgba(0,124,186,0.15);
+    outline: none;
+}
+
+/* Toggle Switch */
+.sky-pickup-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+}
+
+.sky-pickup-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sky-pickup-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.sky-pickup-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.sky-pickup-switch input:checked + .sky-pickup-slider {
+    background-color: #00a32a;
+}
+
+.sky-pickup-switch input:checked + .sky-pickup-slider:before {
+    transform: translateX(22px);
+}
+
+/* Days Selection */
+.sky-pickup-days {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sky-pickup-day-label {
+    display: flex;
+    cursor: pointer;
+}
+
+.sky-pickup-day-label input {
+    display: none;
+}
+
+.sky-pickup-day-label span {
+    display: block;
+    padding: 8px 14px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #50575e;
+    transition: all 0.2s;
+}
+
+.sky-pickup-day-label input:checked + span {
+    background: #007cba;
+    border-color: #007cba;
+    color: #fff;
+}
+
+.sky-pickup-day-label:hover span {
+    border-color: #007cba;
+}
+
+/* Time Slots Section */
+.sky-pickup-time-slots-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed #dcdcde;
+}
+
+.sky-pickup-section-label {
+    display: block;
+    font-weight: 600;
+    color: #1d2327;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.field-description {
+    color: #666;
+    font-size: 12px;
+    margin: 5px 0 15px 0;
+}
+
+.sky-pickup-time-slots {
+    margin-bottom: 15px;
+}
+
+.sky-pickup-time-slot {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
+}
+
+.sky-pickup-slot-row {
+    margin-bottom: 12px;
+}
+
+.sky-pickup-slot-row:last-child {
+    margin-bottom: 0;
+}
+
+.sky-pickup-slot-times {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.sky-pickup-slot-times .sky-pickup-field {
+    flex: 1;
+}
+
+.sky-pickup-remove-slot-btn {
+    background: #ffebee !important;
+    border-color: #ffcdd2 !important;
+    color: #c62828 !important;
+    padding: 0 12px !important;
+    height: 42px;
+    font-size: 18px !important;
+    line-height: 1 !important;
+}
+
+.sky-pickup-remove-slot-btn:hover {
+    background: #ffcdd2 !important;
+    border-color: #ef9a9a !important;
+}
+
+.sky-pickup-add-slot-btn {
+    background: #e3f2fd !important;
+    border-color: #90caf9 !important;
+    color: #1565c0 !important;
+}
+
+.sky-pickup-add-slot-btn:hover {
+    background: #bbdefb !important;
+    border-color: #64b5f6 !important;
+}
+
+.sky-pickup-days-select label:first-child {
+    display: block;
+    font-weight: 500;
+    color: #50575e;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+/* Add Location Button */
+#sky-pickup-add-location {
+    background: #f0f7ff;
+    border: 2px dashed #007cba;
+    color: #007cba;
+    padding: 15px 25px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#sky-pickup-add-location:hover {
+    background: #007cba;
+    color: #fff;
+    border-style: solid;
+}
+
+/* Submit Button */
+.submit .button-hero {
+    font-size: 16px !important;
+    padding: 12px 40px !important;
+    height: auto !important;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+    .sky-pickup-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .sky-pickup-field,
+    .sky-pickup-field-small,
+    .sky-pickup-field-wide {
+        flex: 0 0 100%;
+    }
+    
+    .sky-pickup-days {
+        gap: 6px;
+    }
+    
+    .sky-pickup-day-label span {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}
+
+/* Drag and Drop */
+.sky-pickup-location-item.ui-sortable-helper {
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.sky-pickup-location-item.ui-sortable-placeholder {
+    visibility: visible !important;
+    background: #e8f4fc;
+    border: 2px dashed #007cba;
+}
