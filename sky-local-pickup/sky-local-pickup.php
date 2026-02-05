@@ -3,7 +3,7 @@
  * Plugin Name: Sky Local Pickup Locations
  * Plugin URI: https://skywebdesign.co.uk
  * Description: Modern local pickup location selector for WooCommerce with time slots and custom locations.
- * Version: 1.0.0
+ * Version: 1.0.5
  * Author: Sky Web Design
  * Author URI: https://skywebdesign.co.uk
  * Text Domain: sky-local-pickup
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('SKY_LOCAL_PICKUP_VERSION', '1.0.4');
+define('SKY_LOCAL_PICKUP_VERSION', '1.0.5');
 define('SKY_LOCAL_PICKUP_PATH', plugin_dir_path(__FILE__));
 define('SKY_LOCAL_PICKUP_URL', plugin_dir_url(__FILE__));
 
