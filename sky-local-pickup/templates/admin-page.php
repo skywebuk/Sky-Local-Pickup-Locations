@@ -26,31 +26,6 @@ $days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturd
         </div>
 
         <div class="sky-pickup-settings-section">
-            <h2>Pickup Time Slots</h2>
-            <p class="description">Control which time slots are available for customers to select during checkout. These apply to all locations.</p>
-            <table class="form-table">
-                <tr>
-                    <th>Available Time Slots</th>
-                    <td>
-                        <fieldset>
-                            <label style="display: block; margin-bottom: 10px;">
-                                <input type="checkbox" name="pickup_slot_morning" value="yes"
-                                       <?php checked($slot_morning, 'yes'); ?>>
-                                <strong>Morning</strong> <span class="description">(e.g., 9:00 AM - 12:00 PM)</span>
-                            </label>
-                            <label style="display: block;">
-                                <input type="checkbox" name="pickup_slot_evening" value="yes"
-                                       <?php checked($slot_evening, 'yes'); ?>>
-                                <strong>Evening</strong> <span class="description">(e.g., 12:00 PM - 5:00 PM)</span>
-                            </label>
-                            <p class="description" style="margin-top: 10px;">At least one time slot must be enabled. Customers will only see enabled options at checkout.</p>
-                        </fieldset>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="sky-pickup-settings-section">
             <h2>Pickup Locations</h2>
             <p class="description">Add your pickup locations below. You can set multiple time slots with different days for each location.</p>
             
@@ -85,6 +60,22 @@ $days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturd
                                         <label class="sky-pickup-switch">
                                             <input type="checkbox" name="location_same_day[<?php echo $key; ?>]"
                                                    value="yes" <?php checked($location['same_day'] ?? 'no', 'yes'); ?>>
+                                            <span class="sky-pickup-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="sky-pickup-field sky-pickup-field-small">
+                                        <label>Morning Slot</label>
+                                        <label class="sky-pickup-switch">
+                                            <input type="checkbox" name="location_slot_morning[<?php echo $key; ?>]"
+                                                   value="yes" <?php checked($location['slot_morning'] ?? 'no', 'yes'); ?>>
+                                            <span class="sky-pickup-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="sky-pickup-field sky-pickup-field-small">
+                                        <label>Afternoon Slot</label>
+                                        <label class="sky-pickup-switch">
+                                            <input type="checkbox" name="location_slot_afternoon[<?php echo $key; ?>]"
+                                                   value="yes" <?php checked($location['slot_afternoon'] ?? 'no', 'yes'); ?>>
                                             <span class="sky-pickup-slider"></span>
                                         </label>
                                     </div>
@@ -211,6 +202,20 @@ $days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturd
                     <label>Same Day Pickup</label>
                     <label class="sky-pickup-switch">
                         <input type="checkbox" name="location_same_day[{{INDEX}}]" value="yes">
+                        <span class="sky-pickup-slider"></span>
+                    </label>
+                </div>
+                <div class="sky-pickup-field sky-pickup-field-small">
+                    <label>Morning Slot</label>
+                    <label class="sky-pickup-switch">
+                        <input type="checkbox" name="location_slot_morning[{{INDEX}}]" value="yes">
+                        <span class="sky-pickup-slider"></span>
+                    </label>
+                </div>
+                <div class="sky-pickup-field sky-pickup-field-small">
+                    <label>Afternoon Slot</label>
+                    <label class="sky-pickup-switch">
+                        <input type="checkbox" name="location_slot_afternoon[{{INDEX}}]" value="yes">
                         <span class="sky-pickup-slider"></span>
                     </label>
                 </div>
