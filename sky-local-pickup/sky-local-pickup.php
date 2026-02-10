@@ -3,7 +3,7 @@
  * Plugin Name: Sky Local Pickup Locations
  * Plugin URI: https://skywebdesign.co.uk
  * Description: Modern local pickup location selector for WooCommerce with time slots and custom locations.
- * Version: 1.0.0
+ * Version: 1.0.6
  * Author: Sky Web Design
  * Author URI: https://skywebdesign.co.uk
  * Text Domain: sky-local-pickup
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('SKY_LOCAL_PICKUP_VERSION', '1.0.4');
+define('SKY_LOCAL_PICKUP_VERSION', '1.0.6');
 define('SKY_LOCAL_PICKUP_PATH', plugin_dir_path(__FILE__));
 define('SKY_LOCAL_PICKUP_URL', plugin_dir_url(__FILE__));
 
@@ -102,8 +102,6 @@ class Sky_Local_Pickup {
     public function register_settings() {
         register_setting('sky_local_pickup_settings', 'sky_pickup_locations');
         register_setting('sky_local_pickup_settings', 'sky_pickup_label');
-        register_setting('sky_local_pickup_settings', 'sky_pickup_slot_morning');
-        register_setting('sky_local_pickup_settings', 'sky_pickup_slot_evening');
     }
 
     public function admin_scripts($hook) {
@@ -124,47 +122,17 @@ class Sky_Local_Pickup {
         wp_enqueue_script('sky-pickup-frontend', SKY_LOCAL_PICKUP_URL . 'assets/frontend.js', ['jquery'], SKY_LOCAL_PICKUP_VERSION, true);
 
         $locations = get_option('sky_pickup_locations', []);
-        $slot_morning = get_option('sky_pickup_slot_morning', 'yes');
-        $slot_evening = get_option('sky_pickup_slot_evening', 'yes');
-
-        // Build available time slots array
-        $available_slots = [];
-        if ($slot_morning === 'yes') {
-            $available_slots[] = ['value' => 'morning', 'label' => __('Morning (9:00 AM - 12:00 PM)', 'sky-local-pickup')];
-        }
-        if ($slot_evening === 'yes') {
-            $available_slots[] = ['value' => 'evening', 'label' => __('Afternoon (12:00 PM - 5:00 PM)', 'sky-local-pickup')];
-        }
-
-        // Generate available dates (starting from 3 days from now)
-        $available_dates = [];
-        $start_date = new DateTime();
-        $start_date->modify('+3 days');
-        for ($i = 0; $i < 14; $i++) { // Show 14 days of options
-            $date = clone $start_date;
-            $date->modify("+{$i} days");
-            $available_dates[] = [
-                'value' => $date->format('Y-m-d'),
-                'label' => $date->format('l, j F Y'), // e.g., "Monday, 5 February 2026"
-            ];
-        }
 
         wp_localize_script('sky-pickup-frontend', 'skyPickup', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('sky_pickup_nonce'),
             'locations' => $locations,
-            'selectText' => __('Select a pickup location...', 'sky-local-pickup'),
-            'availableSlots' => $available_slots,
-            'availableDates' => $available_dates,
-            'minDaysGap' => 3,
         ]);
     }
 
     public function admin_page() {
         $locations = get_option('sky_pickup_locations', []);
         $label = get_option('sky_pickup_label', 'Select Pickup Location');
-        $slot_morning = get_option('sky_pickup_slot_morning', 'yes');
-        $slot_evening = get_option('sky_pickup_slot_evening', 'yes');
 
         if (isset($_POST['sky_pickup_save']) && wp_verify_nonce($_POST['sky_pickup_nonce'], 'sky_pickup_save')) {
             $new_locations = [];
@@ -193,29 +161,19 @@ class Sky_Local_Pickup {
                             'google_link' => esc_url_raw($_POST['location_google_link'][$key] ?? ''),
                             'time_slots' => $time_slots,
                             'enabled' => isset($_POST['location_enabled'][$key]) ? 'yes' : 'no',
+                            'same_day' => isset($_POST['location_same_day'][$key]) ? 'yes' : 'no',
+                            'slot_morning' => isset($_POST['location_slot_morning'][$key]) ? 'yes' : 'no',
+                            'slot_afternoon' => isset($_POST['location_slot_afternoon'][$key]) ? 'yes' : 'no',
                         ];
                     }
                 }
             }
 
-            // Save time slot settings (ensure at least one is enabled)
-            $new_slot_morning = isset($_POST['pickup_slot_morning']) ? 'yes' : 'no';
-            $new_slot_evening = isset($_POST['pickup_slot_evening']) ? 'yes' : 'no';
-
-            // If both are disabled, enable morning by default
-            if ($new_slot_morning === 'no' && $new_slot_evening === 'no') {
-                $new_slot_morning = 'yes';
-            }
-
             update_option('sky_pickup_locations', $new_locations);
             update_option('sky_pickup_label', sanitize_text_field($_POST['pickup_label'] ?? 'Select Pickup Location'));
-            update_option('sky_pickup_slot_morning', $new_slot_morning);
-            update_option('sky_pickup_slot_evening', $new_slot_evening);
 
             $locations = $new_locations;
             $label = get_option('sky_pickup_label', 'Select Pickup Location');
-            $slot_morning = $new_slot_morning;
-            $slot_evening = $new_slot_evening;
 
             echo '<div class="notice notice-success is-dismissible"><p>Settings saved successfully!</p></div>';
         }
@@ -230,9 +188,6 @@ class Sky_Local_Pickup {
         }
 
         $locations = get_option('sky_pickup_locations', []);
-        $label = get_option('sky_pickup_label', 'Select Pickup Location');
-        $slot_morning = get_option('sky_pickup_slot_morning', 'yes');
-        $slot_evening = get_option('sky_pickup_slot_evening', 'yes');
 
         // Filter enabled locations only
         $enabled_locations = array_filter($locations, function($loc) {
@@ -247,11 +202,14 @@ class Sky_Local_Pickup {
         $chosen_date = WC()->session->get('sky_chosen_pickup_date');
         $chosen_slot = WC()->session->get('sky_chosen_pickup_slot');
 
-        // Generate available dates (starting from 3 days from now)
+        // Generate available dates (3 days starting from tomorrow)
+        $today = new DateTime();
+        $today->setTime(0, 0, 0);
+
         $available_dates = [];
         $start_date = new DateTime();
-        $start_date->modify('+3 days');
-        for ($i = 0; $i < 14; $i++) {
+        $start_date->modify('+1 day');
+        for ($i = 0; $i < 3; $i++) {
             $date = clone $start_date;
             $date->modify("+{$i} days");
             $available_dates[] = [
@@ -272,6 +230,9 @@ class Sky_Local_Pickup {
                                 data-postcode="<?php echo esc_attr($location['postcode']); ?>"
                                 data-google-link="<?php echo esc_attr($location['google_link'] ?? ''); ?>"
                                 data-time-slots="<?php echo esc_attr($time_slots_json); ?>"
+                                data-same-day="<?php echo esc_attr($location['same_day'] ?? 'no'); ?>"
+                                data-slot-morning="<?php echo esc_attr($location['slot_morning'] ?? 'no'); ?>"
+                                data-slot-afternoon="<?php echo esc_attr($location['slot_afternoon'] ?? 'no'); ?>"
                                 <?php selected($chosen, $key); ?>>
                             <?php echo esc_html($location['name']); ?> - <?php echo esc_html($location['postcode']); ?>
                         </option>
@@ -280,55 +241,38 @@ class Sky_Local_Pickup {
 
                 <!-- Pickup Date Dropdown -->
                 <div class="sky-pickup-date-wrapper" id="sky-pickup-date-wrapper" style="display:none;">
-                    <label for="sky_pickup_date" class="sky-pickup-field-label">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        <?php _e('Pickup Date', 'sky-local-pickup'); ?>
-                    </label>
                     <select name="sky_pickup_date" id="sky_pickup_date" class="sky-pickup-select">
                         <option value=""><?php _e('-- Choose pickup date --', 'sky-local-pickup'); ?></option>
+                        <option value="<?php echo esc_attr($today->format('Y-m-d')); ?>" class="sky-pickup-same-day-option" style="display:none;" <?php selected($chosen_date, $today->format('Y-m-d')); ?>>
+                            <?php _e('Today', 'sky-local-pickup'); ?> - <?php echo esc_html($today->format('l, j F Y')); ?>
+                        </option>
                         <?php foreach ($available_dates as $date): ?>
                             <option value="<?php echo esc_attr($date['value']); ?>" <?php selected($chosen_date, $date['value']); ?>>
                                 <?php echo esc_html($date['label']); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <p class="sky-pickup-field-note"><?php _e('Minimum 3 days from order date required', 'sky-local-pickup'); ?></p>
                 </div>
 
                 <!-- Time Slot Dropdown -->
                 <div class="sky-pickup-slot-wrapper" id="sky-pickup-slot-wrapper" style="display:none;">
-                    <label for="sky_pickup_time_slot" class="sky-pickup-field-label">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        <?php _e('Pickup Time', 'sky-local-pickup'); ?>
-                    </label>
                     <select name="sky_pickup_time_slot" id="sky_pickup_time_slot" class="sky-pickup-select">
                         <option value=""><?php _e('-- Choose time slot --', 'sky-local-pickup'); ?></option>
-                        <?php if ($slot_morning === 'yes'): ?>
-                            <option value="morning" <?php selected($chosen_slot, 'morning'); ?>><?php _e('Morning (9:00 AM - 12:00 PM)', 'sky-local-pickup'); ?></option>
-                        <?php endif; ?>
-                        <?php if ($slot_evening === 'yes'): ?>
-                            <option value="evening" <?php selected($chosen_slot, 'evening'); ?>><?php _e('Afternoon (12:00 PM - 5:00 PM)', 'sky-local-pickup'); ?></option>
-                        <?php endif; ?>
+                        <option value="morning" class="sky-pickup-morning-option" style="display:none;" <?php selected($chosen_slot, 'morning'); ?>><?php _e('Morning (9:00 AM - 12:00 PM)', 'sky-local-pickup'); ?></option>
+                        <option value="afternoon" class="sky-pickup-afternoon-option" style="display:none;" <?php selected($chosen_slot, 'afternoon'); ?>><?php _e('Afternoon (12:00 PM - 5:00 PM)', 'sky-local-pickup'); ?></option>
                     </select>
                 </div>
 
                 <div class="sky-pickup-details" id="sky-pickup-details" style="display:none;">
                     <div class="sky-pickup-info">
                         <div class="sky-pickup-info-row">
-                            <span class="sky-pickup-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                            </span>
                             <span class="sky-pickup-address"></span>
                         </div>
                         <div class="sky-pickup-info-row sky-pickup-hours-container">
-                            <span class="sky-pickup-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            </span>
                             <span class="sky-pickup-hours"></span>
                         </div>
                     </div>
                     <a href="#" class="sky-pickup-directions" id="sky-pickup-directions" target="_blank" style="display:none;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
                         View on Google Maps
                     </a>
                 </div>
@@ -347,31 +291,66 @@ class Sky_Local_Pickup {
                     // Using isset and strict comparison because value could be "0" which is valid
                     if (!isset($_POST['sky_pickup_location']) || $_POST['sky_pickup_location'] === '') {
                         wc_add_notice(__('Please choose a collection point to continue.', 'sky-local-pickup'), 'error');
+                        break;
                     }
+
+                    // Get location to check same_day setting
+                    $location_key = intval($_POST['sky_pickup_location']);
+                    $locations = get_option('sky_pickup_locations', []);
+                    $location = $locations[$location_key] ?? null;
+                    $same_day_allowed = ($location && ($location['same_day'] ?? 'no') === 'yes');
 
                     // Validate pickup date
                     if (!isset($_POST['sky_pickup_date']) || $_POST['sky_pickup_date'] === '') {
                         wc_add_notice(__('Please choose a pickup date to continue.', 'sky-local-pickup'), 'error');
                     } else {
-                        // Verify date is at least 3 days from now
                         $selected_date = new DateTime($_POST['sky_pickup_date']);
-                        $min_date = new DateTime();
-                        $min_date->modify('+3 days');
-                        $min_date->setTime(0, 0, 0);
+                        $selected_date->setTime(0, 0, 0);
 
-                        if ($selected_date < $min_date) {
-                            wc_add_notice(__('Pickup date must be at least 3 days from today.', 'sky-local-pickup'), 'error');
+                        $today = new DateTime();
+                        $today->setTime(0, 0, 0);
+
+                        $tomorrow = new DateTime();
+                        $tomorrow->modify('+1 day');
+                        $tomorrow->setTime(0, 0, 0);
+
+                        $max_date = new DateTime();
+                        $max_date->modify('+3 days');
+                        $max_date->setTime(0, 0, 0);
+
+                        // Check if date is today and same_day is not allowed
+                        if ($selected_date == $today && !$same_day_allowed) {
+                            wc_add_notice(__('Same day pickup is not available for this location.', 'sky-local-pickup'), 'error');
+                        }
+                        // Check if date is in the past
+                        elseif ($selected_date < $today) {
+                            wc_add_notice(__('Please select a valid pickup date.', 'sky-local-pickup'), 'error');
+                        }
+                        // Check if date is beyond the allowed range (3 days from tomorrow)
+                        elseif ($selected_date > $max_date) {
+                            wc_add_notice(__('Please select a pickup date within the next 3 days.', 'sky-local-pickup'), 'error');
                         }
                     }
 
-                    // Validate time slot
-                    if (!isset($_POST['sky_pickup_time_slot']) || $_POST['sky_pickup_time_slot'] === '') {
-                        wc_add_notice(__('Please choose a pickup time slot to continue.', 'sky-local-pickup'), 'error');
-                    } else {
-                        // Verify time slot is valid
-                        $valid_slots = ['morning', 'evening'];
-                        if (!in_array($_POST['sky_pickup_time_slot'], $valid_slots)) {
-                            wc_add_notice(__('Invalid pickup time slot selected.', 'sky-local-pickup'), 'error');
+                    // Validate time slot - only required if location has slots enabled
+                    $slot_morning_allowed = ($location && ($location['slot_morning'] ?? 'no') === 'yes');
+                    $slot_afternoon_allowed = ($location && ($location['slot_afternoon'] ?? 'no') === 'yes');
+                    $has_slots = ($slot_morning_allowed || $slot_afternoon_allowed);
+
+                    if ($has_slots) {
+                        if (!isset($_POST['sky_pickup_time_slot']) || $_POST['sky_pickup_time_slot'] === '') {
+                            wc_add_notice(__('Please choose a pickup time slot to continue.', 'sky-local-pickup'), 'error');
+                        } else {
+                            $selected_slot = $_POST['sky_pickup_time_slot'];
+
+                            // Verify time slot is valid and enabled for this location
+                            if ($selected_slot === 'morning' && !$slot_morning_allowed) {
+                                wc_add_notice(__('Morning slot is not available for this location.', 'sky-local-pickup'), 'error');
+                            } elseif ($selected_slot === 'afternoon' && !$slot_afternoon_allowed) {
+                                wc_add_notice(__('Afternoon slot is not available for this location.', 'sky-local-pickup'), 'error');
+                            } elseif (!in_array($selected_slot, ['morning', 'afternoon'])) {
+                                wc_add_notice(__('Invalid pickup time slot selected.', 'sky-local-pickup'), 'error');
+                            }
                         }
                     }
 
@@ -429,7 +408,7 @@ class Sky_Local_Pickup {
             // Format time slot for display
             $slot_labels = [
                 'morning' => __('Morning (9:00 AM - 12:00 PM)', 'sky-local-pickup'),
-                'evening' => __('Afternoon (12:00 PM - 5:00 PM)', 'sky-local-pickup'),
+                'afternoon' => __('Afternoon (12:00 PM - 5:00 PM)', 'sky-local-pickup'),
             ];
             $order->update_meta_data('_sky_pickup_time_slot_display', $slot_labels[$time_slot] ?? $time_slot);
         }
