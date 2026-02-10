@@ -22,9 +22,12 @@
         },
 
         onCheckoutUpdated: function() {
-            this.checkShippingMethod();
-            // Restore full state after WooCommerce replaces the HTML
-            this.restoreState();
+            var self = this;
+            // Small delay to ensure WooCommerce has finished replacing the DOM
+            setTimeout(function() {
+                self.checkShippingMethod();
+                self.restoreState();
+            }, 100);
         },
 
         checkShippingMethod: function() {
@@ -375,14 +378,6 @@
     // Initialize when DOM is ready
     $(document).ready(function() {
         SkyPickup.init();
-    });
-
-    // Re-initialize after AJAX updates
-    $(document.body).on('updated_checkout', function() {
-        setTimeout(function() {
-            SkyPickup.checkShippingMethod();
-            SkyPickup.restoreState();
-        }, 100);
     });
 
 })(jQuery);
