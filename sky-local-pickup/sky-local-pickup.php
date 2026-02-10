@@ -3,7 +3,7 @@
  * Plugin Name: Sky Local Pickup Locations
  * Plugin URI: https://skywebdesign.co.uk
  * Description: Modern local pickup location selector for WooCommerce with time slots and custom locations.
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author: Sky Web Design
  * Author URI: https://skywebdesign.co.uk
  * Text Domain: sky-local-pickup
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('SKY_LOCAL_PICKUP_VERSION', '1.0.5');
+define('SKY_LOCAL_PICKUP_VERSION', '1.0.6');
 define('SKY_LOCAL_PICKUP_PATH', plugin_dir_path(__FILE__));
 define('SKY_LOCAL_PICKUP_URL', plugin_dir_url(__FILE__));
 
@@ -332,21 +332,25 @@ class Sky_Local_Pickup {
                         }
                     }
 
-                    // Validate time slot
-                    if (!isset($_POST['sky_pickup_time_slot']) || $_POST['sky_pickup_time_slot'] === '') {
-                        wc_add_notice(__('Please choose a pickup time slot to continue.', 'sky-local-pickup'), 'error');
-                    } else {
-                        $selected_slot = $_POST['sky_pickup_time_slot'];
-                        $slot_morning_allowed = ($location && ($location['slot_morning'] ?? 'no') === 'yes');
-                        $slot_afternoon_allowed = ($location && ($location['slot_afternoon'] ?? 'no') === 'yes');
+                    // Validate time slot - only required if location has slots enabled
+                    $slot_morning_allowed = ($location && ($location['slot_morning'] ?? 'no') === 'yes');
+                    $slot_afternoon_allowed = ($location && ($location['slot_afternoon'] ?? 'no') === 'yes');
+                    $has_slots = ($slot_morning_allowed || $slot_afternoon_allowed);
 
-                        // Verify time slot is valid and enabled for this location
-                        if ($selected_slot === 'morning' && !$slot_morning_allowed) {
-                            wc_add_notice(__('Morning slot is not available for this location.', 'sky-local-pickup'), 'error');
-                        } elseif ($selected_slot === 'afternoon' && !$slot_afternoon_allowed) {
-                            wc_add_notice(__('Afternoon slot is not available for this location.', 'sky-local-pickup'), 'error');
-                        } elseif (!in_array($selected_slot, ['morning', 'afternoon'])) {
-                            wc_add_notice(__('Invalid pickup time slot selected.', 'sky-local-pickup'), 'error');
+                    if ($has_slots) {
+                        if (!isset($_POST['sky_pickup_time_slot']) || $_POST['sky_pickup_time_slot'] === '') {
+                            wc_add_notice(__('Please choose a pickup time slot to continue.', 'sky-local-pickup'), 'error');
+                        } else {
+                            $selected_slot = $_POST['sky_pickup_time_slot'];
+
+                            // Verify time slot is valid and enabled for this location
+                            if ($selected_slot === 'morning' && !$slot_morning_allowed) {
+                                wc_add_notice(__('Morning slot is not available for this location.', 'sky-local-pickup'), 'error');
+                            } elseif ($selected_slot === 'afternoon' && !$slot_afternoon_allowed) {
+                                wc_add_notice(__('Afternoon slot is not available for this location.', 'sky-local-pickup'), 'error');
+                            } elseif (!in_array($selected_slot, ['morning', 'afternoon'])) {
+                                wc_add_notice(__('Invalid pickup time slot selected.', 'sky-local-pickup'), 'error');
+                            }
                         }
                     }
 

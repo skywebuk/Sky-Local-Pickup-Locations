@@ -10,7 +10,7 @@
             this.checkShippingMethod();
 
             // Listen for WooCommerce shipping method changes
-            $(document.body).on('updated_checkout', this.checkShippingMethod.bind(this));
+            $(document.body).on('updated_checkout', this.onCheckoutUpdated.bind(this));
             $(document.body).on('updated_shipping_method', this.checkShippingMethod.bind(this));
         },
 
@@ -19,6 +19,12 @@
             $(document).on('change', '#sky_pickup_date', this.onDateChange.bind(this));
             $(document).on('change', '#sky_pickup_time_slot', this.onTimeSlotChange.bind(this));
             $(document).on('change', 'input[name^="shipping_method"]', this.checkShippingMethod.bind(this));
+        },
+
+        onCheckoutUpdated: function() {
+            this.checkShippingMethod();
+            // Restore full state after WooCommerce replaces the HTML
+            this.restoreState();
         },
 
         checkShippingMethod: function() {
@@ -59,6 +65,109 @@
                 $('#sky-pickup-date-wrapper').hide();
                 $('#sky-pickup-slot-wrapper').hide();
             }
+        },
+
+        /**
+         * Restore the full UI state after WooCommerce replaces checkout HTML.
+         * Shows/hides date wrapper, slot wrapper, and slot options based on
+         * the currently selected location WITHOUT resetting any selections.
+         */
+        restoreState: function() {
+            var $select = $('#sky_pickup_location');
+            var $selected = $select.find('option:selected');
+            var $dateWrapper = $('#sky-pickup-date-wrapper');
+            var $slotWrapper = $('#sky-pickup-slot-wrapper');
+            var $dateSelect = $('#sky_pickup_date');
+            var $slotSelect = $('#sky_pickup_time_slot');
+            var $details = $('#sky-pickup-details');
+
+            if (!$selected.val()) {
+                return;
+            }
+
+            $select.addClass('selected');
+
+            // Show date wrapper
+            $dateWrapper.show();
+
+            // Show/hide same day option based on location setting
+            var sameDayAllowed = $selected.data('same-day') === 'yes';
+            var $sameDayOption = $dateSelect.find('.sky-pickup-same-day-option');
+            if (sameDayAllowed) {
+                $sameDayOption.show();
+            } else {
+                $sameDayOption.hide();
+                // Deselect if same day was chosen but not allowed
+                if ($dateSelect.val() === $sameDayOption.val()) {
+                    $dateSelect.val('');
+                }
+            }
+
+            if ($dateSelect.val()) {
+                $dateSelect.addClass('selected');
+            }
+
+            // Show/hide time slot options based on location setting
+            var slotMorningAllowed = $selected.data('slot-morning') === 'yes';
+            var slotAfternoonAllowed = $selected.data('slot-afternoon') === 'yes';
+            var $morningOption = $slotSelect.find('.sky-pickup-morning-option');
+            var $afternoonOption = $slotSelect.find('.sky-pickup-afternoon-option');
+
+            if (slotMorningAllowed) {
+                $morningOption.show();
+            } else {
+                $morningOption.hide();
+            }
+
+            if (slotAfternoonAllowed) {
+                $afternoonOption.show();
+            } else {
+                $afternoonOption.hide();
+            }
+
+            // Deselect slot if it's no longer allowed
+            var currentSlot = $slotSelect.val();
+            if (currentSlot === 'morning' && !slotMorningAllowed) {
+                $slotSelect.val('');
+            } else if (currentSlot === 'afternoon' && !slotAfternoonAllowed) {
+                $slotSelect.val('');
+            }
+
+            // Show slot wrapper if any slot is available
+            if (slotMorningAllowed || slotAfternoonAllowed) {
+                $slotWrapper.show();
+            } else {
+                $slotWrapper.hide();
+            }
+
+            if ($slotSelect.val()) {
+                $slotSelect.addClass('selected');
+            }
+
+            // Restore location details
+            var address = $selected.data('address');
+            var postcode = $selected.data('postcode');
+            var googleLink = $selected.data('google-link');
+            var timeSlots = $selected.data('time-slots');
+
+            $details.find('.sky-pickup-address').text(address + ', ' + postcode);
+
+            var hoursHtml = this.formatTimeSlots(timeSlots);
+            $details.find('.sky-pickup-hours').html(hoursHtml);
+
+            if (hoursHtml) {
+                $details.find('.sky-pickup-hours-container').show();
+            } else {
+                $details.find('.sky-pickup-hours-container').hide();
+            }
+
+            if (googleLink) {
+                $('#sky-pickup-directions').attr('href', googleLink).show();
+            } else {
+                $('#sky-pickup-directions').hide();
+            }
+
+            $details.show();
         },
 
         onLocationChange: function() {
@@ -272,6 +381,7 @@
     $(document.body).on('updated_checkout', function() {
         setTimeout(function() {
             SkyPickup.checkShippingMethod();
+            SkyPickup.restoreState();
         }, 100);
     });
 
