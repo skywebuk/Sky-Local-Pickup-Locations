@@ -66,6 +66,8 @@
             var $details = $('#sky-pickup-details');
             var $dateWrapper = $('#sky-pickup-date-wrapper');
             var $slotWrapper = $('#sky-pickup-slot-wrapper');
+            var $dateSelect = $('#sky_pickup_date');
+            var $slotSelect = $('#sky_pickup_time_slot');
             var $selected = $select.find('option:selected');
 
             if (!$selected.val()) {
@@ -78,9 +80,49 @@
 
             $select.addClass('selected');
 
+            // Check if same day pickup is allowed for this location
+            var sameDayAllowed = $selected.data('same-day') === 'yes';
+            var $sameDayOption = $dateSelect.find('.sky-pickup-same-day-option');
+
+            if (sameDayAllowed) {
+                $sameDayOption.show();
+            } else {
+                $sameDayOption.hide();
+            }
+
+            // Check time slot availability for this location
+            var slotMorningAllowed = $selected.data('slot-morning') === 'yes';
+            var slotAfternoonAllowed = $selected.data('slot-afternoon') === 'yes';
+            var $morningOption = $slotSelect.find('.sky-pickup-morning-option');
+            var $afternoonOption = $slotSelect.find('.sky-pickup-afternoon-option');
+
+            if (slotMorningAllowed) {
+                $morningOption.show();
+            } else {
+                $morningOption.hide();
+            }
+
+            if (slotAfternoonAllowed) {
+                $afternoonOption.show();
+            } else {
+                $afternoonOption.hide();
+            }
+
+            // Reset date and slot selections when location changes
+            $dateSelect.val('');
+            $dateSelect.removeClass('selected');
+            $slotSelect.val('');
+            $slotSelect.removeClass('selected');
+
             // Show date and time slot dropdowns
             $dateWrapper.slideDown(300);
-            $slotWrapper.slideDown(300);
+
+            // Only show slot wrapper if at least one slot is available
+            if (slotMorningAllowed || slotAfternoonAllowed) {
+                $slotWrapper.slideDown(300);
+            } else {
+                $slotWrapper.hide();
+            }
 
             // Get data from selected option
             var address = $selected.data('address');

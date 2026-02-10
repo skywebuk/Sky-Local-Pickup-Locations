@@ -58,28 +58,6 @@
     animation: skyPickupFadeIn 0.3s ease;
 }
 
-.sky-pickup-field-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    color: #1d2327;
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-.sky-pickup-field-label svg {
-    color: #007cba;
-    flex-shrink: 0;
-}
-
-.sky-pickup-field-note {
-    margin: 8px 0 0 0;
-    font-size: 12px;
-    color: #666;
-    font-style: italic;
-}
-
 /* Location Details */
 .sky-pickup-details {
     margin-top: 20px;
