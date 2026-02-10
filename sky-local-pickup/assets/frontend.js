@@ -1,5 +1,5 @@
 /**
- * Sky Local Pickup - Frontend JavaScript
+ * Sky Local Pickup - Frontend JavaScript v1.0.6
  */
 (function($) {
     'use strict';
